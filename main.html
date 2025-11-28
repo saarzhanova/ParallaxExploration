@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .parallax {
+            position: relative;
+            height: 600px;        /* высота "окна" */
+            overflow: hidden;
+        }
+
+        .parallax .layer {
+            position: absolute;
+            inset: 0;             /* top:0; right:0; bottom:0; left:0 */
+            width: 100%;
+            height: 100%;
+            object-fit: cover;    /* чтобы картиночки красиво растягивались */
+            will-change: transform;
+        }
+
+        /* порядок наложения: дальний ниже, ближний сверху */
+        .layer-back {
+            z-index: 1;
+        }
+
+        .layer-middle {
+            z-index: 2;
+        }
+
+        .layer-front {
+            z-index: 3;
+        }
+        .parallax {
+            position: relative;
+            height: 600px;
+            overflow: hidden;
+            cursor: grab;  /* чтобы видно было, что можно тянуть */
+        }
+        .parallax-wrap {
+            transform: scale(0.5); /* уменьшение до одной трети */
+            transform-origin: center; /* чтобы не смещалось странно */
+        }
+
+    </style>
+</head>
+<body style="background-color: #f2f2f2">
+
+<div class="parallax-wrap">
+<div class="parallax">
+    <img src="back-w-points.png" style="bottom: 14%;" class="layer layer-back" data-depth="0.2">
+    <img src="middle.png" style="bottom: 14%; left: 2%; height: 250px; width: auto;" class="layer layer-front" data-depth="0.4">
+    <img src="front-w-points.png" style="bottom: -17%; left:60%; height: 370px; width: auto;" class="layer layer-middle" data-depth="0.25">
+</div>
+</div>
+
+<script>
+    const parallax = document.querySelector('.parallax');
+    const layers = parallax.querySelectorAll('.layer');
+
+    let isDragging = false;
+    let startX = 0;
+    let currentOffset = 0;
+    let dragDelta = 0;
+
+    function applyParallax(offset) {
+        layers.forEach(layer => {
+            const depth = parseFloat(layer.dataset.depth || 0);
+            const translateX = offset * depth;
+            layer.style.transform = `translateX(${translateX}px)`;
+        });
+    }
+
+    parallax.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        dragDelta = 0;
+        parallax.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', (e) => {
+        if (!isDragging) return;
+
+        dragDelta = e.clientX - startX;
+        const offset = currentOffset + dragDelta;
+
+        applyParallax(offset);
+    });
+
+    window.addEventListener('mouseup', () => {
+        if (!isDragging) return;
+
+        isDragging = false;
+        currentOffset += dragDelta;
+        dragDelta = 0;
+        parallax.style.cursor = 'grab';
+    });
+
+
+</script>
+</body>
+</html>
